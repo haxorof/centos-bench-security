@@ -32,26 +32,27 @@ check_1() {
   todo "1.1.18  - Ensure nodev option set on removable media partitions (Not Scored)"
   todo "1.1.19  - Ensure nosuid option set on removable media partitions (Not Scored)"
   todo "1.1.20  - Ensure noexec option set on removable media partitions (Not Scored)"
-  todo "1.1.20  - Ensure noexec option set on removable media partitions (Not Scored)"
-  todo "1.1.21  - Ensure sticky bit is set on all world-writable directories (Scored)" test_sticky_wrld_w_dirs
-  todo "1.1.22  - Disable Automounting (Scored)"
+  #test_wrapper "1.1.21  - Ensure sticky bit is set on all world-writable directories (Scored)" test_sticky_wrld_w_dirs
+  test_wrapper "1.1.22  - Disable Automounting (Scored)" test_service_disable autofs
 
-  todo "1.2     - Configure Software Updates"
-  todo "1.2.1   - Ensure package manager repositories are configured (Not Scored)"
-  todo "1.2.2   - Ensure GPG keys are configured (Not Scored)"
-  todo "1.2.3   - Ensure gpgcheck is globally activated (Scored)"
+  info "1.2     - Configure Software Updates"
+  info "1.2.1   - Ensure package manager repositories are configured (Not Scored)"
+  # yum repolist
+  info "1.2.2   - Ensure GPG keys are configured (Not Scored)"
+  # rpm -q gpg-pubkey --qf '%{name}-%{version}-%{release} --> %{summary}\n'
+  test_wrapper "1.2.3   - Ensure gpgcheck is globally activated (Scored)" test_yum_gpgcheck
 
-  todo "1.3     - Filesystem Integrity Checking"
-  todo "1.3.1   - Ensure AIDE is installed (Scored)"
-  todo "1.3.2   - Ensure filesystem integrity is regularly checked (Scored)"
+  info "1.3     - Filesystem Integrity Checking"
+  test_wrapper "1.3.1   - Ensure AIDE is installed (Scored)" rpm_installed aide
+  test_wrapper "1.3.2   - Ensure filesystem integrity is regularly checked (Scored)" verify_aide_cron
 
-  todo "1.4     - Secure Boot Settings"
-  todo "1.4.1   - Ensure permissions on bootloader config are configured (Scored)"
-  todo "1.4.2   - Ensure bootloader password is set (Scored)"
-  todo "1.4.3   - Ensure authentication required for single user mode (Not Scored)"
+  info "1.4     - Secure Boot Settings"
+  test_wrapper "1.4.1   - Ensure permissions on bootloader config are configured (Scored)" test_grub_owns
+  test_wrapper "1.4.2   - Ensure bootloader password is set (Scored)" test_boot_pass
+  test_wrapper "1.4.3   - Ensure authentication required for single user mode (Not Scored)" test_auth_rescue_mode
 
-  todo "1.5     - Additional Process Hardening"
-  todo "1.5.1   - Ensure core dumps are restricted (Scored)"
+  info "1.5     - Additional Process Hardening"
+  test_wrapper "1.5.1   - Ensure core dumps are restricted (Scored)" test_restrict_core_dumps
   todo "1.5.2   - Ensure XD/NX support is enabled (Not Scored)"
   todo "1.5.3   - Ensure address space layout randomization (ASLR) is enabled (Scored)"
   todo "1.5.4   - Ensure prelink is disabled (Scored)"

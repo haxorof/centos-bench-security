@@ -37,6 +37,7 @@ main () {
     logit ""
     . ./"$test"
     func_wrapper check_$(echo "$test" | awk -F_ '{print $1}' | cut -d/ -f2)
+    exit
   done
 
   logit ""  
