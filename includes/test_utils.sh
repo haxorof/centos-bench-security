@@ -43,7 +43,8 @@ PROF_D='/etc/profile.d'
 MOTD='/etc/motd'
 ISSUE='/etc/issue'
 ISSUE_NET='/etc/issue.net'
-BANNER_MSG='/etc/dconf/db/gdm.d/01-banner-message'
+GDM_PROFILE='/etc/dconf/profile/gdm'
+GDM_BANNER_MSG='/etc/dconf/db/gdm.d/01-banner-message'
 RESCUE_SRV='/usr/lib/systemd/system/rescue.service'
 
 test_disable_mounting() {
@@ -86,19 +87,36 @@ test_yum_gpgcheck() {
   ! grep ^gpgcheck /etc/yum.repos.d/* | grep 0$ || return
 }
 
-rpm_installed() {
+test_rpm_installed() {
   local rpm="${1}"
   local rpm_out
   rpm_out="$(rpm -q --queryformat "%{NAME}\n" ${rpm})"
   [[ "${rpm}" = "${rpm_out}" ]] || return
 }
 
-verify_aide_cron() {
+test_rpm_not_installed() {
+  local rpm="${1}"
+  rpm -q ${rpm} | grep -q "package ${rpm} is not installed" || return
+}
+
+test_aide_cron() {
   crontab -u root -l 2>/dev/null | cut -d\# -f1 | grep -q "aide \+--check" || return
 }
 
-test_grub_owns() {
-  stat -L -c "%u %g" ${GRUB_CFG} | grep -q '0 0' || return
+test_file_perms() {
+  local file="${1}"
+  local pattern="${2}"
+  stat -L -c "%a" ${file} | grep -q "${pattern}" || return
+}
+
+test_root_owns() {
+  local file="${1}"
+  stat -L -c "%u %g" ${file} | grep -q '0 0' || return
+}
+
+test_grub_permissions() {
+  test_root_owns ${GRUB_CFG}
+  test_file_perms ${GRUB_CFG} 0600
 }
 
 test_boot_pass() {
@@ -116,13 +134,91 @@ test_auth_rescue_mode() {
   grep -q /sbin/sulogin ${RESCUE_SRV} || return
 }
 
+test_sysctl() {
+  local flag="$1"
+  local value="$2"
+  sysctl "${flag}" | cut -d= -f2 | tr -d '[[:space:]]' | grep -q "${value}" || return
+}
+
 test_restrict_core_dumps() {
   egrep -q "\*{1}[[:space:]]+hard[[:space:]]+core[[:space:]]+0" "${LIMITS_CNF}" || return
   for f in /etc/security/limits.d/*; do
     egrep -q "\*{1}[[:space:]]+hard[[:space:]]+core[[:space:]]+0" "${f}" || return
   done
-  cut -d\# -f1 ${SYSCTL_CNF} | grep fs.suid_dumpable | cut -d= -f2 | tr -d '[[:space:]]' | grep -q '0' || return 
+  test_sysctl fs.suid_dumpable 0 || return 
 }
+
+test_xd_nx_support_enabled() {
+  dmesg | egrep -q "NX[[:space:]]\(Execute[[:space:]]Disable\)[[:space:]]protection:[[:space:]]active" || return
+}
+
+test_selinux_grubcfg() {
+  local grep_out1
+  grep_out1="$(grep selinux=0 ${GRUB_CFG})"
+  [[ -z "${grep_out1}" ]] || return
+  local grep_out2
+  grep_out2="$(grep enforcing=0 ${GRUB_CFG})"
+  [[ -z "${grep_out2}" ]] || return
+}
+
+test_selinux_state() {
+  cut -d \# -f1 ${SELINUX_CFG} | grep 'SELINUX=' | tr -d '[[:space:]]' | grep -q 'SELINUX=enforcing' || return
+}
+
+test_selinux_policy() {
+  cut -d \# -f1 ${SELINUX_CFG} | grep 'SELINUXTYPE=' | tr -d '[[:space:]]' | grep -q 'SELINUXTYPE=targeted' || return
+}
+
+test_unconfined_procs() {
+  local ps_out
+  ps_out="$(ps -eZ | egrep 'initrc|unconfined' | egrep -v 'bash|ps|grep')"
+  [[ -n "${ps_out}" ]] || return
+}
+
+test_warn_banner_motd() {
+  local motd
+  motd="$(egrep '(\\v|\\r|\\m|\\s)' ${MOTD})"
+  [[ -z "${motd}" ]] || return
+}
+
+test_warn_banner_local() {
+  local issue
+  issue="$(egrep '(\\v|\\r|\\m|\\s)' ${ISSUE})"
+  [[ -z "${issue}" ]] || return
+}
+
+test_warn_banner_remote() {
+  local issue_net
+  issue_net="$(egrep '(\\v|\\r|\\m|\\s)' ${ISSUE_NET})"
+  [[ -z "${issue_net}" ]] || return
+}
+
+test_warn_banner_permissions() {
+  test_root_owns ${MOTD}
+  test_file_perms ${MOTD} 0644
+}
+
+test_gdm_banner_msg() {
+  if [[ -f "${BANNER_MSG}" ]] ; then
+    egrep '[org/gnome/login-screen]' ${BANNER_MSG} || return
+    egrep 'banner-message-enable=true' ${BANNER_MSG} || return
+    egrep 'banner-message-text=' ${BANNER_MSG} || return
+  fi
+}
+
+test_gdm_banner() {
+  if [[ -f "${GDM_PROFILE}" ]] ; then
+    egrep 'user-db:user' ${GDM_PROFILE} || return
+    egrep 'system-db:gdm' ${GDM_PROFILE} || return
+    egrep 'file-db:/usr/share/gdm/greeter-dconf-defaults' ${GDM_PROFILE} || return
+    test_gdm_banner_msg
+  fi
+}
+
+test_yum_check_update() {
+  yum -q check-update &>/dev/null || return
+}
+
 test_wrapper() {
   local msg=$1
   shift

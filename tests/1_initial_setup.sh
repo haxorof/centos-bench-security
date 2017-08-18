@@ -43,40 +43,40 @@ check_1() {
   test_wrapper "1.2.3   - Ensure gpgcheck is globally activated (Scored)" test_yum_gpgcheck
 
   info "1.3     - Filesystem Integrity Checking"
-  test_wrapper "1.3.1   - Ensure AIDE is installed (Scored)" rpm_installed aide
-  test_wrapper "1.3.2   - Ensure filesystem integrity is regularly checked (Scored)" verify_aide_cron
+  test_wrapper "1.3.1   - Ensure AIDE is installed (Scored)" test_rpm_installed aide
+  test_wrapper "1.3.2   - Ensure filesystem integrity is regularly checked (Scored)" test_aide_cron
 
   info "1.4     - Secure Boot Settings"
-  test_wrapper "1.4.1   - Ensure permissions on bootloader config are configured (Scored)" test_grub_owns
+  test_wrapper "1.4.1   - Ensure permissions on bootloader config are configured (Scored)" test_grub_permissions
   test_wrapper "1.4.2   - Ensure bootloader password is set (Scored)" test_boot_pass
   test_wrapper "1.4.3   - Ensure authentication required for single user mode (Not Scored)" test_auth_rescue_mode
 
   info "1.5     - Additional Process Hardening"
   test_wrapper "1.5.1   - Ensure core dumps are restricted (Scored)" test_restrict_core_dumps
-  todo "1.5.2   - Ensure XD/NX support is enabled (Not Scored)"
-  todo "1.5.3   - Ensure address space layout randomization (ASLR) is enabled (Scored)"
-  todo "1.5.4   - Ensure prelink is disabled (Scored)"
+  test_wrapper "1.5.2   - Ensure XD/NX support is enabled (Not Scored)" test_xd_nx_support_enabled
+  test_wrapper "1.5.3   - Ensure address space layout randomization (ASLR) is enabled (Scored)" test_sysctl kernel.randomize_va_space 2
+  test_wrapper "1.5.4   - Ensure prelink is disabled (Scored)" test_rpm_not_installed prelink
 
-  todo "1.6     - Mandatory Access Control"
-  todo "1.6.1   - Configure SELinux"
-  todo "1.6.1.1 - Ensure SELinux is not disabled in bootloader configuration (Scored)"
-  todo "1.6.1.2 - Ensure the SELinux state is enforcing (Scored)"
-  todo "1.6.1.3 - Ensure SELinux policy is configured (Scored)"
-  todo "1.6.1.4 - Ensure SETroubleshoot is not installed (Scored)"
-  todo "1.6.1.5 - Ensure the MCS Translation Service (mcstrans) is not installed (Scored)"
-  todo "1.6.1.6 - Ensure no unconfined daemons exist (Scored)"
-  todo "1.6.2   - Ensure SELinux is installed (Scored)"
+  info "1.6     - Mandatory Access Control"
+  info "1.6.1   - Configure SELinux"
+  test_wrapper "1.6.1.1 - Ensure SELinux is not disabled in bootloader configuration (Scored)" test_selinux_grubcfg
+  test_wrapper "1.6.1.2 - Ensure the SELinux state is enforcing (Scored)" test_selinux_state
+  test_wrapper "1.6.1.3 - Ensure SELinux policy is configured (Scored)" test_selinux_policy
+  test_wrapper "1.6.1.4 - Ensure SETroubleshoot is not installed (Scored)" test_rpm_not_installed setroubleshoot
+  test_wrapper "1.6.1.5 - Ensure the MCS Translation Service (mcstrans) is not installed (Scored)" test_rpm_not_installed mcstrans
+  test_wrapper "1.6.1.6 - Ensure no unconfined daemons exist (Scored)" test_unconfined_procs
+  test_wrapper "1.6.2   - Ensure SELinux is installed (Scored)" test_rpm_installed libselinux
 
-  todo "1.7     - Warning Banners"
-  todo "1.7.1   - Command Line Warning Banners"
-  todo "1.7.1.1 - Ensure message of the day is configured properly (Scored)"
-  todo "1.7.1.2 - Ensure local login warning banner is configured properly (Not Scored)"
-  todo "1.7.1.3 - Ensure remote login warning banner is configured properly (Not Scored)"
-  todo "1.7.1.4 - Ensure permissions on /etc/motd are configured (Not Scored)"
-  todo "1.7.1.5 - Ensure permissions on /etc/issue are configured (Scored)"
-  todo "1.7.1.6 - Ensure permissions on /etc/issue.net are configured (Not Scored)"
-  todo "1.7.2   - Ensure GDM login banner is configured (Scored)"
+  info "1.7     - Warning Banners"
+  info "1.7.1   - Command Line Warning Banners"
+  test_wrapper "1.7.1.1 - Ensure message of the day is configured properly (Scored)" test_warn_banner_motd
+  test_wrapper "1.7.1.2 - Ensure local login warning banner is configured properly (Not Scored)" test_warn_banner_local
+  test_wrapper "1.7.1.3 - Ensure remote login warning banner is configured properly (Not Scored)" test_warn_banner_remote
+  test_wrapper "1.7.1.4 - Ensure permissions on /etc/motd are configured (Not Scored)" test_warn_banner_permissions ${MOTD}
+  test_wrapper "1.7.1.5 - Ensure permissions on /etc/issue are configured (Scored)" test_warn_banner_permissions ${ISSUE}
+  test_wrapper "1.7.1.6 - Ensure permissions on /etc/issue.net are configured (Not Scored)" test_warn_banner_permissions ${ISSUE_NET}
+  test_wrapper "1.7.2   - Ensure GDM login banner is configured (Scored)" test_gdm_banner
 
-  todo "1.8     - Ensure updates, patches, and additional security software are installed (Not Scored)"
+  test_wrapper "1.8     - Ensure updates, patches, and additional security software are installed (Not Scored)" test_yum_check_update
 
 }
