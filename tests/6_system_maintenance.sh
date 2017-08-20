@@ -1,8 +1,8 @@
 #!/bin/env bash
 
 check_6() {
-  todo "6 - System Maintenance"
-  todo "6.1    - System File Permissions"
+  info "6 - System Maintenance"
+  info "6.1    - System File Permissions"
   todo "6.1.1  - Audit system file permissions (Not Scored)"
   todo "6.1.2  - Ensure permissions on /etc/passwd are configured (Scored)"
   todo "6.1.3  - Ensure permissions on /etc/shadow are configured (Scored)"
@@ -17,7 +17,7 @@ check_6() {
   todo "6.1.12 - Ensure no ungrouped files or directories exist (Scored)"
   todo "6.1.13 - Audit SUID executables (Not Scored)"
   todo "6.1.14 - Audit SGID executables (Not Scored)"
-  todo "6.2    - User and Group Settings"
+  info "6.2    - User and Group Settings"
   todo "6.2.1  - Ensure password fields are not empty (Scored)"
   todo "6.2.2  - Ensure no legacy "+" entries exist in /etc/passwd (Scored)"
   todo "6.2.3  - Ensure no legacy "+" entries exist in /etc/shadow (Scored)"

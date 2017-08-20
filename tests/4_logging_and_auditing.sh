@@ -1,8 +1,9 @@
 #!/bin/env bash
 
 check_4() {
-  todo "4 - Logging and Auditing"
-  todo "4.1     - Configure System Accounting (auditd)"
+  info "4 - Logging and Auditing"
+  info "4.1     - Configure System Accounting (auditd)"
+  info "4.1.1   - Configure Data Retention"
   todo "4.1.1.1 - Ensure audit log storage size is configured (Not Scored)"
   todo "4.1.1.2 - Ensure system is disabled when audit logs are full (Scored)"
   todo "4.1.1.3 - Ensure audit logs are not automatically deleted (Scored)"
@@ -23,12 +24,14 @@ check_4() {
   todo "4.1.16  - Ensure system administrator actions (sudolog) are collected (Scored)"
   todo "4.1.17  - Ensure kernel module loading and unloading is collected (Scored)"
   todo "4.1.18  - Ensure the audit configuration is immutable (Scored)"
-  todo "4.2     - Configure Logging"
+  info "4.2     - Configure Logging"
+  info "4.2.1   - Configure rsyslog"
   todo "4.2.1.1 - Ensure rsyslog Service is enabled (Scored)"
   todo "4.2.1.2 - Ensure logging is configured (Not Scored)"
   todo "4.2.1.3 - Ensure rsyslog default file permissions configured (Scored)"
   todo "4.2.1.4 - Ensure rsyslog is configured to send logs to a remote log host (Scored)"
   todo "4.2.1.5 - Ensure remote rsyslog messages are only accepted on designated log hosts. (Not Scored)"
+  info "4.2.2   - Configure syslog-ng"
   todo "4.2.2.1 - Ensure syslog-ng service is enabled (Scored)"
   todo "4.2.2.2 - Ensure logging is configured (Not Scored)"
   todo "4.2.2.3 - Ensure syslog-ng default file permissions configured (Scored)"

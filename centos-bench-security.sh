@@ -21,7 +21,10 @@ main () {
   fi
 
   yell "# ------------------------------------------------------------------------------
-# CentOS Bench for Security v2.1.1 (01-31-2017)
+# CentOS Bench for Security 
+# 
+# Based on 'CIS CentOS Linux 7 Benchmark v2.1.1 (01-31-2017)'
+# https://www.cisecurity.org/cis-benchmarks/
 #
 # Björn Oscarsson (c) 2017-
 #

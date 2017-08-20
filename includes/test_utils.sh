@@ -50,7 +50,7 @@ GDM_PROFILE='/etc/dconf/profile/gdm'
 GDM_BANNER_MSG='/etc/dconf/db/gdm.d/01-banner-message'
 RESCUE_SRV='/usr/lib/systemd/system/rescue.service'
 
-test_disable_mounting() {
+test_module_disabled() {
   local module="${1}"
   modprobe -n -v ${module} 2>&1 | grep -q "install \+/bin/true" || return 
   lsmod | grep -qv "${module}" || return
@@ -184,7 +184,7 @@ test_warn_banner() {
   [[ -z "${banner}" ]] || return
 }
 
-test_warn_banner_permissions() {
+test_permissions_0644_root_root() {
   local file=$1
   test_root_owns ${file} || return
   test_file_perms ${file} 0644 || return
@@ -254,6 +254,56 @@ test_rsh_service_disabled() {
   test_service_disable rsh.socket || return
   test_service_disable rlogin.socket || return
   test_service_disable rexec.socket || return
+}
+
+test_net_ipv4_conf_all_default() {
+  local suffix=$1
+  local value=$2
+  test_sysctl "net.ipv4.conf.all.${suffix}" ${value} || return
+  test_sysctl "net.ipv4.conf.default.${suffix}" ${value} || return
+}
+
+test_net_ipv6_conf_all_default() {
+  local suffix=$1
+  local value=$2
+  test_sysctl "net.ipv6.conf.all.${suffix}" ${value} || return
+  test_sysctl "net.ipv6.conf.default.${suffix}" ${value} || return
+}
+
+test_ipv6_disabled() {
+  modprobe -c | egrep -q '[[:space:]]*options[[:space:]]+ipv6[[:space:]]+disable=1' || return
+}
+
+test_tcp_wrappers_installed() {
+  test_rpm_installed tcp_wrappers
+  test_rpm_installed tcp_wrappers-libs
+}
+
+test_hosts_deny_content() {
+  cut -d\# -f1 ${HOSTS_DENY} | grep -q "ALL[[:space:]]*:[[:space:]]*ALL" || return
+}
+
+test_firewall_policy() {
+  iptables -L | egrep -q "Chain[[:space:]]+INPUT[[:space:]]+" | egrep -q "policy[[:space:]]+DROP" || return
+  iptables -L | egrep -q "Chain[[:space:]]+FORWARD[[:space:]]+" | egrep -q "policy[[:space:]]+DROP" || return
+  iptables -L | egrep -q "Chain[[:space:]]+OUTPUT[[:space:]]+" | egrep -q "policy[[:space:]]+DROP" || return
+}
+
+test_loopback_traffic_conf() {
+  local accept="ACCEPT[[:space:]]+all[[:space:]]+--[[:space:]]+lo[[:space:]]+\*[[:space:]]+0\.0\.0\.0\/0[[:space:]]+0\.0\.0\.0\/0"
+  local drop="DROP[[:space:]]+all[[:space:]]+--[[:space:]]+\*[[:space:]]+\*[[:space:]]+127\.0\.0\.0\/8[[:space:]]+0\.0\.0\.0\/0"
+  iptables -L INPUT -v -n | egrep -q ${accept} || return
+  iptables -L INPUT -v -n | egrep -q ${drop} || return
+  iptables -L OUTPUT -v -n | egrep -q ${accept} || return
+}
+
+test_wireless_if_disabled() {
+  for i in $(iwconfig 2>&1 | egrep -v "no[[:space:]]*wireless" | cut -d' ' -f1); do
+    ip link show up | grep "${i}:"
+    if [[ "$?" -eq 0 ]]; then
+    return 1
+    fi
+  done
 }
 
 test_wrapper() {

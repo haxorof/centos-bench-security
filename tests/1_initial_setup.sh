@@ -4,14 +4,14 @@ check_1() {
   info "1 - Initial Setup"
   info "1.1     - Filesystem Configuration"
   info "1.1.1   - Disable unused filesystems"
-  test_wrapper "1.1.1.1 - Ensure mounting of cramfs filesystems is disabled (Scored)" test_disable_mounting cramfs
-  test_wrapper "1.1.1.2 - Ensure mounting of freevxfs filesystems is disabled (Scored)" test_disable_mounting freevxfs
-  test_wrapper "1.1.1.3 - Ensure mounting of jffs2 filesystems is disabled (Scored)" test_disable_mounting jffs2
-  test_wrapper "1.1.1.4 - Ensure mounting of hfs filesystems is disabled (Scored)" test_disable_mounting hfs
-  test_wrapper "1.1.1.5 - Ensure mounting of hfsplus filesystems is disabled (Scored)" test_disable_mounting hfsplus
-  test_wrapper "1.1.1.6 - Ensure mounting of squashfs filesystems is disabled (Scored)" test_disable_mounting squashfs
-  test_wrapper "1.1.1.7 - Ensure mounting of udf filesystems is disabled (Scored)" test_disable_mounting udf
-  test_wrapper "1.1.1.8 - Ensure mounting of FAT filesystems is disabled (Scored)" test_disable_mounting vfat
+  test_wrapper "1.1.1.1 - Ensure mounting of cramfs filesystems is disabled (Scored)" test_module_disabled cramfs
+  test_wrapper "1.1.1.2 - Ensure mounting of freevxfs filesystems is disabled (Scored)" test_module_disabled freevxfs
+  test_wrapper "1.1.1.3 - Ensure mounting of jffs2 filesystems is disabled (Scored)" test_module_disabled jffs2
+  test_wrapper "1.1.1.4 - Ensure mounting of hfs filesystems is disabled (Scored)" test_module_disabled hfs
+  test_wrapper "1.1.1.5 - Ensure mounting of hfsplus filesystems is disabled (Scored)" test_module_disabled hfsplus
+  test_wrapper "1.1.1.6 - Ensure mounting of squashfs filesystems is disabled (Scored)" test_module_disabled squashfs
+  test_wrapper "1.1.1.7 - Ensure mounting of udf filesystems is disabled (Scored)" test_module_disabled udf
+  test_wrapper "1.1.1.8 - Ensure mounting of FAT filesystems is disabled (Scored)" test_module_disabled vfat
 
   test_wrapper "1.1.2   - Ensure separate partition exists for /tmp (Scored)" test_separate_partition /tmp
   test_wrapper "1.1.3   - Ensure nodev option set on /tmp partition (Scored)" test_mount_option /tmp nodev
@@ -74,9 +74,9 @@ check_1() {
   test_wrapper "1.7.1.1 - Ensure message of the day is configured properly (Scored)" test_warn_banner ${MOTD}
   test_wrapper "1.7.1.2 - Ensure local login warning banner is configured properly (Not Scored)" test_warn_banner ${ISSUE}
   test_wrapper "1.7.1.3 - Ensure remote login warning banner is configured properly (Not Scored)" test_warn_banner ${ISSUE_NET}
-  test_wrapper "1.7.1.4 - Ensure permissions on /etc/motd are configured (Not Scored)" test_warn_banner_permissions ${MOTD}
-  test_wrapper "1.7.1.5 - Ensure permissions on /etc/issue are configured (Scored)" test_warn_banner_permissions ${ISSUE}
-  test_wrapper "1.7.1.6 - Ensure permissions on /etc/issue.net are configured (Not Scored)" test_warn_banner_permissions ${ISSUE_NET}
+  test_wrapper "1.7.1.4 - Ensure permissions on /etc/motd are configured (Not Scored)" test_permissions_0644_root_root ${MOTD}
+  test_wrapper "1.7.1.5 - Ensure permissions on /etc/issue are configured (Scored)" test_permissions_0644_root_root ${ISSUE}
+  test_wrapper "1.7.1.6 - Ensure permissions on /etc/issue.net are configured (Not Scored)" test_permissions_0644_root_root ${ISSUE_NET}
   test_wrapper "1.7.2   - Ensure GDM login banner is configured (Scored)" test_gdm_banner
 
   if [[ -z "$BENCH_SKIP_SLOW" ]]; then
