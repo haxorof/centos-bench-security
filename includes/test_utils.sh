@@ -7,6 +7,9 @@ GRUB_DIR='/etc/grub.d'
 SELINUX_CFG='/etc/selinux/config'
 NTP_CONF='/etc/ntp.conf'
 SYSCON_NTPD='/etc/sysconfig/ntpd'
+NTP_SRV='/usr/lib/systemd/system/ntpd.service'
+CHRONY_CONF='/etc/chrony.conf'
+CHRONY_SYSCON='/etc/sysconfig/chronyd'
 LIMITS_CNF='/etc/security/limits.conf'
 SYSCTL_CNF='/etc/sysctl.conf'
 CENTOS_REL='/etc/centos-release'
@@ -72,12 +75,12 @@ test_sticky_wrld_w_dirs() {
 
 test_service_disable() {
   local service="$1" 
-  systemctl is-enabled "${service}" 2>/dev/null | grep -q 'disabled' && return
+  systemctl is-enabled "${service}" 2>&1 | egrep -q 'disabled|Failed' || return
 }
 
 test_service_enabled() {
   local service="$1" 
-  systemctl is-enabled "${service}" 2>/dev/null | grep -q 'enabled' && return
+  systemctl is-enabled "${service}" 2>&1 | grep -q 'enabled' || return
 }
 
 test_yum_gpgcheck() {
@@ -175,27 +178,16 @@ test_unconfined_procs() {
   [[ -n "${ps_out}" ]] || return
 }
 
-test_warn_banner_motd() {
-  local motd
-  motd="$(egrep '(\\v|\\r|\\m|\\s)' ${MOTD})"
-  [[ -z "${motd}" ]] || return
-}
-
-test_warn_banner_local() {
-  local issue
-  issue="$(egrep '(\\v|\\r|\\m|\\s)' ${ISSUE})"
-  [[ -z "${issue}" ]] || return
-}
-
-test_warn_banner_remote() {
-  local issue_net
-  issue_net="$(egrep '(\\v|\\r|\\m|\\s)' ${ISSUE_NET})"
-  [[ -z "${issue_net}" ]] || return
+test_warn_banner() {
+  local banner
+  banner="$(egrep '(\\v|\\r|\\m|\\s)' ${1})"
+  [[ -z "${banner}" ]] || return
 }
 
 test_warn_banner_permissions() {
-  test_root_owns ${MOTD}
-  test_file_perms ${MOTD} 0644
+  local file=$1
+  test_root_owns ${file} || return
+  test_file_perms ${file} 0644 || return
 }
 
 test_gdm_banner_msg() {
@@ -211,12 +203,57 @@ test_gdm_banner() {
     egrep 'user-db:user' ${GDM_PROFILE} || return
     egrep 'system-db:gdm' ${GDM_PROFILE} || return
     egrep 'file-db:/usr/share/gdm/greeter-dconf-defaults' ${GDM_PROFILE} || return
-    test_gdm_banner_msg
+    test_gdm_banner_msg || return
   fi
 }
 
 test_yum_check_update() {
   yum -q check-update &>/dev/null || return
+}
+
+test_dgram_stream_services_disabled() {
+  local service=$1
+  test_service_disable ${service}-dgram || return
+  test_service_disable ${service}-stream || return
+}
+
+test_time_sync_services_enabled() {
+  test_service_enabled ntpd && return
+  test_service_enabled chronyd && return
+  return 1
+}
+
+test_ntp_cfg() {
+  cut -d\# -f1 ${NTP_CONF} | egrep "restrict{1}[[:space:]]+default{1}" ${NTP_CONF} | grep kod | grep nomodify | grep notrap | grep nopeer | grep -q noquery || return
+  cut -d\# -f1 ${NTP_CONF} | egrep "restrict{1}[[:space:]]+\-6{1}[[:space:]]+default" | grep kod | grep nomodify | grep notrap | grep nopeer | grep -q noquery || return
+  cut -d\# -f1 ${NTP_CONF} | egrep -q "^[[:space:]]*server" || return
+  cut -d\# -f1 ${SYSCON_NTPD} | grep "OPTIONS=" | grep -q "ntp:ntp" && return
+  cut -d\# -f1 ${NTP_SRV} | grep "^ExecStart" | grep -q "ntp:ntp" && return
+  return 1
+}
+
+test_chrony_cfg() {
+  cut -d\# -f1 ${CHRONY_CONF} | egrep -q "^[[:space:]]*server" || return
+  cut -d\# -f1 ${CHRONY_SYSCON} | grep "OPTIONS=" | grep -q "-u chrony" || return
+}
+
+test_nfs_rpcbind_services_disabled() {
+  test_service_disable nfs || return
+  test_service_disable rpcbind || return
+}
+
+test_mta_local_only() {
+  netstat_out="$(netstat -an | grep "LIST" | grep ":25[[:space:]]")"
+  if [[ "$?" -eq 0 ]] ; then
+    ip=$(echo ${netstat_out} | cut -d: -f1 | cut -d" " -f4)
+    [[ "${ip}" = "127.0.0.1" ]] || return    
+  fi
+}
+
+test_rsh_service_disabled() {
+  test_service_disable rsh.socket || return
+  test_service_disable rlogin.socket || return
+  test_service_disable rexec.socket || return
 }
 
 test_wrapper() {

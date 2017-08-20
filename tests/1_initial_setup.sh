@@ -32,14 +32,16 @@ check_1() {
   todo "1.1.18  - Ensure nodev option set on removable media partitions (Not Scored)"
   todo "1.1.19  - Ensure nosuid option set on removable media partitions (Not Scored)"
   todo "1.1.20  - Ensure noexec option set on removable media partitions (Not Scored)"
-  #test_wrapper "1.1.21  - Ensure sticky bit is set on all world-writable directories (Scored)" test_sticky_wrld_w_dirs
+  if [[ -z "$BENCH_SKIP_SLOW" ]]; then
+    test_wrapper "1.1.21  - Ensure sticky bit is set on all world-writable directories (Scored)" test_sticky_wrld_w_dirs
+  else
+    skip "1.1.21  - Ensure sticky bit is set on all world-writable directories (Scored)"
+  fi
   test_wrapper "1.1.22  - Disable Automounting (Scored)" test_service_disable autofs
 
   info "1.2     - Configure Software Updates"
   info "1.2.1   - Ensure package manager repositories are configured (Not Scored)"
-  # yum repolist
   info "1.2.2   - Ensure GPG keys are configured (Not Scored)"
-  # rpm -q gpg-pubkey --qf '%{name}-%{version}-%{release} --> %{summary}\n'
   test_wrapper "1.2.3   - Ensure gpgcheck is globally activated (Scored)" test_yum_gpgcheck
 
   info "1.3     - Filesystem Integrity Checking"
@@ -69,14 +71,17 @@ check_1() {
 
   info "1.7     - Warning Banners"
   info "1.7.1   - Command Line Warning Banners"
-  test_wrapper "1.7.1.1 - Ensure message of the day is configured properly (Scored)" test_warn_banner_motd
-  test_wrapper "1.7.1.2 - Ensure local login warning banner is configured properly (Not Scored)" test_warn_banner_local
-  test_wrapper "1.7.1.3 - Ensure remote login warning banner is configured properly (Not Scored)" test_warn_banner_remote
+  test_wrapper "1.7.1.1 - Ensure message of the day is configured properly (Scored)" test_warn_banner ${MOTD}
+  test_wrapper "1.7.1.2 - Ensure local login warning banner is configured properly (Not Scored)" test_warn_banner ${ISSUE}
+  test_wrapper "1.7.1.3 - Ensure remote login warning banner is configured properly (Not Scored)" test_warn_banner ${ISSUE_NET}
   test_wrapper "1.7.1.4 - Ensure permissions on /etc/motd are configured (Not Scored)" test_warn_banner_permissions ${MOTD}
   test_wrapper "1.7.1.5 - Ensure permissions on /etc/issue are configured (Scored)" test_warn_banner_permissions ${ISSUE}
   test_wrapper "1.7.1.6 - Ensure permissions on /etc/issue.net are configured (Not Scored)" test_warn_banner_permissions ${ISSUE_NET}
   test_wrapper "1.7.2   - Ensure GDM login banner is configured (Scored)" test_gdm_banner
 
-  test_wrapper "1.8     - Ensure updates, patches, and additional security software are installed (Not Scored)" test_yum_check_update
-
+  if [[ -z "$BENCH_SKIP_SLOW" ]]; then
+    test_wrapper "1.8     - Ensure updates, patches, and additional security software are installed (Not Scored)" test_yum_check_update
+  else
+    skip "1.8     - Ensure updates, patches, and additional security software are installed (Not Scored)"
+  fi
 }

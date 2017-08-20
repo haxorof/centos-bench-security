@@ -4,7 +4,8 @@ BLDRED='\033[1;31m'
 BLDGRN='\033[1;32m'
 BLDBLU='\033[1;34m'
 BLDYLW='\033[1;33m' # Yellow
-BLDGRY='\033[1;35m' # Magenta
+BLDMGT='\033[1;35m' # Magenta
+BLDCYN='\033[1;36m' # Cyan 
 TXTRST='\033[0m'
 
 logit () {
@@ -28,7 +29,11 @@ note () {
 }
 
 todo() {
-  printf "%b\n" "${BLDGRY}[TODO]${TXTRST} $1"
+  printf "%b\n" "${BLDMGT}[TODO]${TXTRST} $1"
+}
+
+skip() {
+  printf "%b\n" "${BLDCYN}[SKIP]${TXTRST} $1"
 }
 
 yell () {

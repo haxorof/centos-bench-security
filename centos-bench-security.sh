@@ -14,7 +14,12 @@ func_wrapper() {
   fi
 }
 
-main () {
+main () {  
+  # Simple input to skip slow tests
+  if [[ "$1" == "--skip-slow" ]]; then
+    export BENCH_SKIP_SLOW=1
+  fi
+
   yell "# ------------------------------------------------------------------------------
 # CentOS Bench for Security v2.1.1 (01-31-2017)
 #
@@ -37,7 +42,6 @@ main () {
     logit ""
     . ./"$test"
     func_wrapper check_$(echo "$test" | awk -F_ '{print $1}' | cut -d/ -f2)
-    exit
   done
 
   logit ""  
