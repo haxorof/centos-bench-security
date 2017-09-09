@@ -1,5 +1,10 @@
 #!/bin/env bash
 
+# Simple input to skip slow tests
+if [[ "$1" == "--skip-slow" ]]; then
+  export BENCH_SKIP_SLOW=1
+fi
+
 . includes/log_utils.sh
 . includes/test_utils.sh
 
@@ -15,11 +20,6 @@ func_wrapper() {
 }
 
 main () {  
-  # Simple input to skip slow tests
-  if [[ "$1" == "--skip-slow" ]]; then
-    export BENCH_SKIP_SLOW=1
-  fi
-
   yell "# ------------------------------------------------------------------------------
 # CentOS Bench for Security 
 # 

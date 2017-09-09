@@ -1,6 +1,5 @@
 #!/bin/env bash
 
-FSTAB='/etc/fstab'
 YUM_CONF='/etc/yum.conf'
 GRUB_CFG='/boot/grub2/grub.cfg'
 GRUB_DIR='/etc/grub.d'
@@ -51,6 +50,12 @@ GDM_PROFILE='/etc/dconf/profile/gdm'
 GDM_BANNER_MSG='/etc/dconf/db/gdm.d/01-banner-message'
 RESCUE_SRV='/usr/lib/systemd/system/rescue.service'
 
+if [[ "$BENCH_SKIP_SLOW" == "1" ]]; then
+  DO_SKIP_SLOW=1
+else
+  DO_SKIP_SLOW=0
+fi
+
 test_module_disabled() {
   local module="${1}"
   modprobe -n -v ${module} 2>&1 | grep -q "install \+/bin/true" || return 
@@ -58,15 +63,14 @@ test_module_disabled() {
 }
 
 test_separate_partition() {
-  local filesystem="${1}"
-  grep -q "[[:space:]]${filesystem}[[:space:]]" "${FSTAB}" || return
+  local target="${1}"
+  findmnt -n ${target} | grep -q "${target}" || return
 }
 
 test_mount_option() {
-  local filesystem="${1}"
+  local target="${1}"
   local mnt_option="${2}"
-  grep "[[:space:]]${filesystem}[[:space:]]" "${FSTAB}" | grep -q "${mnt_option}" || return
-  mount | grep "[[:space:]]${filesystem}[[:space:]]" | grep -q "${mnt_option}" || return
+  findmnt -nlo options ${target} | grep -q "${mnt_option}" || return
 }
 
 test_sticky_wrld_w_dirs() {
@@ -186,6 +190,12 @@ test_warn_banner() {
 }
 
 test_permissions_0644_root_root() {
+  local file=$1
+  test_root_owns ${file} || return
+  test_file_perms ${file} 0644 || return
+}
+
+test_permissions_0600_root_root() {
   local file=$1
   test_root_owns ${file} || return
   test_file_perms ${file} 0644 || return
@@ -537,17 +547,64 @@ test_var_log_files_permissions() {
   [[ $(find /var/log -type f -ls | grep -v "\-r\-\-\-\-\-\-\-\-" | grep -v "\-rw\-\-\-\-\-\-\-" | grep -v "\-rw\-r\-\-\-\-\-" | wc -l) -eq 0 ]] || return
 }
 
+test_at_cron_auth_users() {
+  [[ ! -f ${AT_DENY} ]] || return 
+  [[ ! -f ${CRON_DENY} ]] || return 
+  test_permissions_0600_root_root "${CRON_ALLOW}" || return
+  test_permissions_0600_root_root "${AT_ALLOW}" || return
+}
+
+test_param() {
+  local file="${1}" 
+  local parameter="${2}" 
+  local value="${3}" 
+  cut -d\# -f1 ${file} | egrep -q "^${parameter}[[:space:]]+${value}" || return
+}
+
+test_ssh_param_le() {
+  local parameter="${1}" 
+  local allowed_max="${2}"
+  local actual_value
+  actual_value=$(cut -d\# -f1 ${SSHD_CFG} | grep "${parameter}" | cut -d" " -f2)
+  [[ ${actual_value} -le ${allowed_max} ]] || return 
+}
+
+test_ssh_idle_timeout() {
+  test_ssh_param_le ClientAliveInterval 300 || return
+  test_ssh_param_le ClientAliveCountMax 3 || return
+}
+
+test_ssh_access() {
+  local allow_users
+  local allow_groups
+  local deny_users
+  local deny_users
+  allow_users="$(cut -d\# -f1 ${SSHD_CFG} | grep "AllowUsers" | cut -d" " -f2)"
+  allow_groups="$(cut -d\# -f1 ${SSHD_CFG} | grep "AllowGroups" | cut -d" " -f2)"
+  deny_users="$(cut -d\# -f1 ${SSHD_CFG} | grep "DenyUsers" | cut -d" " -f2)"
+  deny_groups="$(cut -d\# -f1 ${SSHD_CFG} | grep "DenyGroups" | cut -d" " -f2)"
+  [[ -n "${allow_users}" ]] || return
+  [[ -n "${allow_groups}" ]] || return
+  [[ -n "${deny_users}" ]] || return
+  [[ -n "${deny_groups}" ]] || return
+}
+
 test_wrapper() {
+  local do_skip=$1
+  shift
   local msg=$1
   shift
   local func=$1
   shift
   local args=$@
-  ${func} ${args} 
-  #2>/dev/null
-  if [[ "$?" -eq 0 ]]; then
-    pass "${msg}"
+  if [[ "$do_skip" -eq 0 ]]; then
+    ${func} ${args} 
+    if [[ "$?" -eq 0 ]]; then
+      pass "${msg}"
+    else
+      warn "${msg}"
+    fi
   else
-    warn "${msg}"
+    skip "${msg}"
   fi
 }
