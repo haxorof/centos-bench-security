@@ -102,7 +102,7 @@ test_rpm_installed() {
 
 test_rpm_not_installed() {
   local rpm="${1}"
-  rpm -q ${rpm} | grep -q "package ${rpm} is not installed" || return
+  rpm -q ${rpm} | grep -q "not installed" || return
 }
 
 test_aide_cron() {
