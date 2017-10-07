@@ -97,9 +97,7 @@ test_yum_gpgcheck() {
 
 test_rpm_installed() {
   local rpm="${1}"
-  local rpm_out
-  rpm_out="$(rpm -q --queryformat "%{NAME}\n" ${rpm})"
-  [[ "${rpm}" = "${rpm_out}" ]] || return
+  rpm -q ${rpm} | grep -qe "^${rpm}" || return
 }
 
 test_rpm_not_installed() {

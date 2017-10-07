@@ -13,8 +13,12 @@ check_2() {
   info "2.2     - Special Purpose Services"
   info "2.2.1   - Time Synchronization"
   test_wrapper 0 "2.2.1.1 - Ensure time synchronization is in use (Not Scored)" test_time_sync_services_enabled
-  test_wrapper 0 "2.2.1.2 - Ensure ntp is configured (Scored)" test_ntp_cfg
-  test_wrapper 0 "2.2.1.3 - Ensure chrony is configured (Scored)" test_chrony_cfg
+  test_service_enabled ntpd
+  local do_skip_ntpd=$?
+  test_wrapper $do_skip_ntpd "2.2.1.2 - Ensure ntp is configured (Scored)" test_ntp_cfg
+  test_service_enabled chronyd
+  local do_skip_chronyd=$?
+  test_wrapper $do_skip_chronyd "2.2.1.3 - Ensure chrony is configured (Scored)" test_chrony_cfg
   test_wrapper 0 "2.2.2   - Ensure X Window System is not installed (Scored)" test_rpm_not_installed 'xorg-x11*'
   test_wrapper 0 "2.2.3   - Ensure Avahi Server is not enabled (Scored)" test_service_disable avahi-daemon
   test_wrapper 0 "2.2.4   - Ensure CUPS is not enabled (Scored)" test_service_disable cups
