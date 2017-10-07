@@ -243,7 +243,7 @@ test_ntp_cfg() {
 
 test_chrony_cfg() {
   cut -d\# -f1 ${CHRONY_CONF} | egrep -q "^[[:space:]]*server" || return
-  cut -d\# -f1 ${CHRONY_SYSCON} | grep "OPTIONS=" | grep -q "-u chrony" || return
+  cut -d\# -f1 ${CHRONY_SYSCON} | grep "OPTIONS=" | grep -q "\-u chrony" || return
 }
 
 test_nfs_rpcbind_services_disabled() {
