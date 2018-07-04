@@ -73,6 +73,11 @@ test_mount_option() {
   findmnt -nlo options ${target} | grep -q "${mnt_option}" || return
 }
 
+test_system_file_perms() {
+  local dirs="$(rpm -Va --nomtime --nosize --nomd5 --nolinkto)"
+  [[ -z "${dirs}" ]] || return
+}
+
 test_sticky_wrld_w_dirs() {
   local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \))"
   [[ -z "${dirs}" ]] || return
