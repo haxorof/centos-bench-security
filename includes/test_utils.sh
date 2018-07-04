@@ -190,13 +190,13 @@ test_warn_banner() {
 test_permissions_0644_root_root() {
   local file=$1
   test_root_owns ${file} || return
-  test_file_perms ${file} 0644 || return
+  test_file_perms ${file} 644 || return
 }
 
 test_permissions_0600_root_root() {
   local file=$1
   test_root_owns ${file} || return
-  test_file_perms ${file} 0644 || return
+  test_file_perms ${file} 600 || return
 }
 
 test_gdm_banner_msg() {
