@@ -78,6 +78,31 @@ test_sticky_wrld_w_dirs() {
   [[ -z "${dirs}" ]] || return
 }
 
+test_wrld_writable_files() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -0002)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_unowned_files() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nouser)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_ungrouped_files() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nogroup)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_suid_executables() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -4000)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_sgid_executables() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -2000)"
+  [[ -z "${dirs}" ]] || return
+}
+
 test_service_disable() {
   local service="$1" 
   systemctl is-enabled "${service}" 2>&1 | egrep -q 'disabled|Failed' || return
