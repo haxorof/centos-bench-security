@@ -5,7 +5,7 @@ check_6() {
   info "6.1    - System File Permissions"
   todo "6.1.1  - Audit system file permissions (Not Scored)"
   test_wrapper 0 "6.1.2  - Ensure permissions on /etc/passwd are configured (Scored)" test_permissions_0644_root_root ${PASSWD}
-  todo "6.1.3  - Ensure permissions on /etc/shadow are configured (Scored)"
+  test_wrapper 0 "6.1.3  - Ensure permissions on /etc/shadow are configured (Scored)" test_permissions_0000_root_root ${SHADOW}
   todo "6.1.4  - Ensure permissions on /etc/group are configured (Scored)"
   todo "6.1.5  - Ensure permissions on /etc/gshadow are configured (Scored)"
   todo "6.1.6  - Ensure permissions on /etc/passwd- are configured (Scored)"
