@@ -111,11 +111,7 @@ test_aide_cron() {
 
 test_file_perms() {
   local file="${1}"
-  local pattern="${2}"
-  
-  # == there is an issue where the stat -L -c command only return 3 characters.  Many of the searches are looking for 4, causing a problem
-  echo "Permission of ${file} (expecting $pattern)"
-  stat -L -c "%a" ${file}
+  local pattern="${2}"  
   stat -L -c "%a" ${file} | grep -qE "^${pattern}$" || return
 }
 
