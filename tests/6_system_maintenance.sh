@@ -3,20 +3,20 @@
 check_6() {
   info "6 - System Maintenance"
   info "6.1    - System File Permissions"
-  todo "6.1.1  - Audit system file permissions (Not Scored)"
-  todo "6.1.2  - Ensure permissions on /etc/passwd are configured (Scored)"
-  todo "6.1.3  - Ensure permissions on /etc/shadow are configured (Scored)"
-  todo "6.1.4  - Ensure permissions on /etc/group are configured (Scored)"
-  todo "6.1.5  - Ensure permissions on /etc/gshadow are configured (Scored)"
-  todo "6.1.6  - Ensure permissions on /etc/passwd- are configured (Scored)"
-  todo "6.1.7  - Ensure permissions on /etc/shadow- are configured (Scored)"
-  todo "6.1.8  - Ensure permissions on /etc/group- are configured (Scored)"
-  todo "6.1.9  - Ensure permissions on /etc/gshadow- are configured (Scored)"
-  todo "6.1.10 - Ensure no world writable files exist (Scored)"
-  todo "6.1.11 - Ensure no unowned files or directories exist (Scored)"
-  todo "6.1.12 - Ensure no ungrouped files or directories exist (Scored)"
-  todo "6.1.13 - Audit SUID executables (Not Scored)"
-  todo "6.1.14 - Audit SGID executables (Not Scored)"
+  test_wrapper 0 "6.1.1  - Audit system file permissions (Not Scored)" test_system_file_perms
+  test_wrapper 0 "6.1.2  - Ensure permissions on /etc/passwd are configured (Scored)" test_permissions_0644_root_root ${PASSWD}
+  test_wrapper 0 "6.1.3  - Ensure permissions on /etc/shadow are configured (Scored)" test_permissions_0000_root_root ${SHADOW}
+  test_wrapper 0 "6.1.4  - Ensure permissions on /etc/group are configured (Scored)" test_permissions_0644_root_root ${GROUP}
+  test_wrapper 0 "6.1.5  - Ensure permissions on /etc/gshadow are configured (Scored)" test_permissions_0000_root_root ${GSHADOW}
+  test_wrapper 0 "6.1.6  - Ensure permissions on /etc/passwd- are configured (Scored)" test_permissions_0644_root_root ${PASSWD}-
+  test_wrapper 0 "6.1.7  - Ensure permissions on /etc/shadow- are configured (Scored)" test_permissions_0000_root_root ${SHADOW}-
+  test_wrapper 0 "6.1.8  - Ensure permissions on /etc/group- are configured (Scored)" test_permissions_0644_root_root ${GROUP}-
+  test_wrapper 0 "6.1.9  - Ensure permissions on /etc/gshadow- are configured (Scored)" test_permissions_0000_root_root ${GSHADOW}-
+  test_wrapper 0 "6.1.10 - Ensure no world writable files exist (Scored)" test_wrld_writable_files
+  test_wrapper 0 "6.1.11 - Ensure no unowned files or directories exist (Scored)" test_unowned_files
+  test_wrapper 0 "6.1.12 - Ensure no ungrouped files or directories exist (Scored)" test_ungrouped_files
+  test_wrapper 0 "6.1.13 - Audit SUID executables (Not Scored)" test_suid_executables
+  test_wrapper 0 "6.1.14 - Audit SGID executables (Not Scored)" test_sgid_executables
   info "6.2    - User and Group Settings"
   todo "6.2.1  - Ensure password fields are not empty (Scored)"
   todo "6.2.2  - Ensure no legacy \"+\" entries exist in /etc/passwd (Scored)"

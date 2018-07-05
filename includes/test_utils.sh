@@ -73,8 +73,38 @@ test_mount_option() {
   findmnt -nlo options ${target} | grep -q "${mnt_option}" || return
 }
 
+test_system_file_perms() {
+  local dirs="$(rpm -Va --nomtime --nosize --nomd5 --nolinkto)"
+  [[ -z "${dirs}" ]] || return
+}
+
 test_sticky_wrld_w_dirs() {
   local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \))"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_wrld_writable_files() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -0002)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_unowned_files() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nouser)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_ungrouped_files() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nogroup)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_suid_executables() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -4000)"
+  [[ -z "${dirs}" ]] || return
+}
+
+test_sgid_executables() {
+  local dirs="$(df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -2000)"
   [[ -z "${dirs}" ]] || return
 }
 
@@ -111,8 +141,8 @@ test_aide_cron() {
 
 test_file_perms() {
   local file="${1}"
-  local pattern="${2}"
-  stat -L -c "%a" ${file} | grep -q "${pattern}" || return
+  local pattern="${2}"  
+  stat -L -c "%a" ${file} | grep -qE "^${pattern}$" || return
 }
 
 test_root_owns() {
@@ -190,13 +220,19 @@ test_warn_banner() {
 test_permissions_0644_root_root() {
   local file=$1
   test_root_owns ${file} || return
-  test_file_perms ${file} 0644 || return
+  test_file_perms ${file} 644 || return
 }
 
 test_permissions_0600_root_root() {
   local file=$1
   test_root_owns ${file} || return
-  test_file_perms ${file} 0644 || return
+  test_file_perms ${file} 600 || return
+}
+
+test_permissions_0000_root_root() {
+  local file=$1
+  test_root_owns ${file} || return
+  test_file_perms ${file} 0 || return
 }
 
 test_gdm_banner_msg() {
